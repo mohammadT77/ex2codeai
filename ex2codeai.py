@@ -5,6 +5,9 @@ from langchain.llms.base import LLM
 
 
 class Example:
+    """
+    Example input and output
+    """
     def __init__(self, input: dict, output):
         self.input = input
         self.output = output
@@ -19,7 +22,11 @@ class Example:
         inp = ",".join([f"{k}: {v}" for k, v in self.input.items()])
         return f"Input: ({inp}), Output: {self.output}\n"
 
+
 class Spec:
+    """
+    Base class for all specs
+    """
     PROMPT = None
 
     def __init__(self, name: str, desc=""):
@@ -34,17 +41,28 @@ class Spec:
         }
     
     def invoke(self, llm: LLM):
+        """
+        Invoke the LLM with the prompt
+        """
         chain = self.PROMPT | llm
         return chain.invoke(self.to_dict())
 
     def generate(self, llm: LLM):
+        """
+        Generate the function by invoking the LLM and parsing the output (str)
+        """
         return self.parse(self.invoke(llm))
 
     def parse(self, str_obj: str):
+        """
+        Parse the output of the LLM
+
+        Args:
+            str_obj (str): Output of the LLM
+        """
         str_obj = str_obj.replace("```", "")
         exec(str_obj)
-        f = eval(self.name)
-        return f
+        return eval(self.name)
 
     def prompt(self):
         return self.PROMPT.format(**self.to_dict())
@@ -65,12 +83,19 @@ class FuncSpec(Spec):
         """
     PROMPT = PromptTemplate.from_template(TEMPLATE)
 
-    def __init__(self, name, desc="", *examples: Example):
+    def __init__(self, name: str, desc: str, *examples: Example):
         super().__init__(name, desc)
         self.examples = list(examples)
 
-    def add_example(self, input: dict, output):
-        example = Example(input, output)
+    def add_example(self, _input: dict, output):
+        """
+        Add an example to the function
+
+        Args:
+            _input (dict): Input of the example
+            output: Output of the example
+        """
+        example = Example(_input, output)
         self.examples.append(example)
         return self
 
@@ -105,23 +130,47 @@ class ClassSpec(Spec):
     PROMPT = PromptTemplate.from_template(TEMPLATE)
 
 
-    def __init__(self, name, desc=""):
+    def __init__(self, name, desc):
         super().__init__(name, desc)
         self.instance_methods = []
         self.class_methods = []
         self.static_methods = []
 
-    def add_instance_method(self, name, desc="", *examples: Example):
+    def add_instance_method(self, name:str, desc: str, *examples: Example):
+        """
+        Add an instance method to the class
+
+        Args:
+            name (str): Name of the method
+            desc (str): Description of the method
+            examples (Example): Examples of the method
+        """
         method = FuncSpec(name, desc, *examples)
         self.instance_methods.append(method)
         return self
     
-    def add_class_method(self, name, desc="", *examples: Example):
+    def add_class_method(self, name:str, desc: str, *examples: Example):
+        """
+        Add an class method to the class
+        
+        Args:
+            name (str): Name of the method
+            desc (str): Description of the method
+            examples (Example): Examples of the method
+        """
         method = FuncSpec(name, desc, *examples)
         self.class_methods.append(method)
         return self
     
-    def add_static_method(self, name, desc="", *examples: Example):
+    def add_static_method(self, name:str, desc: str, *examples: Example):
+        """
+        Add a static method to the class
+        
+        Args:
+            name (str): Name of the method
+            desc (str): Description of the method
+            examples (Example): Examples of the method
+        """
         method = FuncSpec(name, desc, *examples)
         self.static_methods.append(method)
         return self
