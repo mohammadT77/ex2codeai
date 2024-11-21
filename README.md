@@ -49,6 +49,8 @@ pip install your-llm-wrapper  # e.g., langchain-ollama
     llm = OllamaLLM(base_url="https://your-ollama-instance-url", model="your-model-name")
     ```
 
+    **Note:** You can use Google Colab for serving Ollama. See https://github.com/mohammadT77/ollama-colab
+
 2. **Define Specifications**: Specify the desired functions or classes, including names, descriptions, and examples.
    1. **Define Functions:**
     ```python
