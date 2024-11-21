@@ -57,13 +57,21 @@ class Spec:
         Invoke the LLM with the prompt
         """
         chain = self.PROMPT | llm
-        return chain.invoke(self.to_dict())
+        str_obj = chain.invoke(self.to_dict())
+        str_obj = str_obj.replace("```", "")
+        return str_obj
 
-    def generate(self, llm: LLM):
+    def generate(self, llm: LLM) -> tuple[str, any]:
         """
         Generate the function by invoking the LLM and parsing the output (str)
+
+        Args:
+            llm (LLM): LLM
+        Returns:
+            str, obj
         """
-        return self.parse(self.invoke(llm))
+        str_obj = self.invoke(llm)
+        return str_obj, self.parse(str_obj)
 
     def parse(self, str_obj: str):
         """
@@ -272,5 +280,7 @@ class ModuleSpec(Spec):
         str_obj = str_obj.replace("```", "")
         module = types.ModuleType(self.name)
         exec(str_obj, module.__dict__)
-        
+        module.__doc__ = self.desc
+        module.__name__ = self.name
+
         return self._wrap_generated_obj(module, str_obj)

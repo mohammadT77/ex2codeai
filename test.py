@@ -84,5 +84,5 @@ def test_module_generation(llm):
     my_class_instance = my_module.MyClass()
     assert my_class_instance.add(1, 2) == 3
     
-
+    save_module("_test_my_module.py", module_code)
     
